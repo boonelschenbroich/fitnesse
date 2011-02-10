@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.LinkedList;
 
+import fitnesse.slim.SlimService;
+
 public class SocketService {
   private ServerSocket serverSocket = null;
   private Thread serviceThread = null;
@@ -15,6 +17,7 @@ public class SocketService {
   private SocketServer server = null;
   private LinkedList<Thread> threads = new LinkedList<Thread>();
   private volatile boolean everRan=false;
+  
   public SocketService(int port, SocketServer server) throws Exception {
     this.server = server;
     serverSocket = new ServerSocket(port);
@@ -33,7 +36,8 @@ public class SocketService {
     running = false;
     serverSocket.close();
     serviceThread.join();
-    waitForServerThreads();
+    // wait for server threads is now calling close, so this is not necessary any more
+    // waitForServerThreads();
   }
 
   private void waitForServiceThreadToStart() {
@@ -81,8 +85,14 @@ public class SocketService {
       }
       t.join();
     }
+    try {
+      // no closing of the server socket is fine, since all threads are done 
+      close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
-
+  
   private class ServerRunner implements Runnable {
     private Socket socket;
 
@@ -92,7 +102,7 @@ public class SocketService {
 
     public void run() {
       try {
-        server.serve(socket);
+        server.getInstance().serve(socket);
         synchronized (threads) {
           threads.remove(Thread.currentThread());
         }

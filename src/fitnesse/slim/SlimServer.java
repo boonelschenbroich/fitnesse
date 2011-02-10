@@ -9,14 +9,16 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SlimServer implements SocketServer {
+  public static final String EXCEPTION_TAG = "__EXCEPTION__:";
+  public static final String EXCEPTION_STOP_TEST_TAG = "__EXCEPTION__:ABORT_SLIM_TEST:";
+
   private StreamReader reader;
   private BufferedWriter writer;
   private ListExecutor executor;
-  public static final String EXCEPTION_TAG = "__EXCEPTION__:";
-  public static final String EXCEPTION_STOP_TEST_TAG = "__EXCEPTION__:ABORT_SLIM_TEST:";
   private boolean verbose;
   private SlimFactory slimFactory;
 
@@ -26,13 +28,18 @@ public class SlimServer implements SocketServer {
   }
 
   public void serve(Socket s) {
+    boolean byeCalled = false;
     try {
-      tryProcessInstructions(s);
+      byeCalled = tryProcessInstructions(s);
     } catch (Throwable e) {
+      e.printStackTrace();
     } finally {
       slimFactory.stop();
       close();
-      closeEnclosingServiceInSeperateThread();
+      // we only want to stop the current thread and close the server socket only if bye is called
+      if(byeCalled) {
+        closeEnclosingServiceInSeperateThread();
+      }
     }
   }
 
@@ -48,11 +55,13 @@ public class SlimServer implements SocketServer {
     ).start();
   }
 
-  private void tryProcessInstructions(Socket s) throws Exception {
+  private boolean tryProcessInstructions(Socket s) throws Exception {
     initialize(s);
     boolean more = true;
     while (more)
       more = processOneSetOfInstructions();
+    
+    return !more;
   }
 
   private void initialize(Socket s) throws Exception {
@@ -107,5 +116,10 @@ public class SlimServer implements SocketServer {
     } catch (Exception e) {
 
     }
+  }
+
+  @Override
+  public SocketServer getInstance() {
+    return new SlimServer(verbose, slimFactory);
   }
 }

@@ -27,4 +27,9 @@ public class FitNesseServer implements SocketServer {
       e.printStackTrace();
     }
   }
+
+  @Override
+  public SocketServer getInstance() {
+    return this;
+  }
 }

@@ -21,8 +21,15 @@ public class SocketServiceTest extends TestCase {
 
   public SocketServiceTest() {
     connectionCounter = new SocketServer() {
+      
+      @Override
       public void serve(Socket s) {
         connections++;
+      }
+      
+      @Override
+      public SocketServer getInstance() {
+        return this;
       }
     };
   }
@@ -125,6 +132,11 @@ class HelloService implements SocketServer {
     catch (IOException e) {
     }
   }
+
+  @Override
+  public SocketServer getInstance() {
+    return this;
+  }
 }
 
 class EchoService implements SocketServer {
@@ -137,5 +149,10 @@ class EchoService implements SocketServer {
     }
     catch (IOException e) {
     }
+  }
+
+  @Override
+  public SocketServer getInstance() {
+    return this;
   }
 }

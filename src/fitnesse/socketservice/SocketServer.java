@@ -12,7 +12,13 @@ import java.net.Socket;
 
 public interface SocketServer {
   public void serve(Socket s);
-
+  
+  /**
+   * Get instance can return a new SocketServer instance, if necessary
+   * @return
+   */
+  public SocketServer getInstance();
+  
   static class StreamUtility {
     public static PrintStream GetPrintStream(Socket s) throws IOException {
       OutputStream os = s.getOutputStream();
