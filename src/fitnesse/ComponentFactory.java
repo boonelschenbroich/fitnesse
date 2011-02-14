@@ -59,6 +59,7 @@ public class ComponentFactory {
   public ComponentFactory(String propertiesLocation, Properties properties) {
     this.propertiesLocation = propertiesLocation;
     this.loadedProperties = properties;
+    this.symbolProvider = SymbolProvider.wikiParsingProvider;
     loadProperties(propertiesLocation);
   }
 
