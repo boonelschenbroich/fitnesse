@@ -137,8 +137,18 @@ public class PageCrawlerImpl implements PageCrawler {
   }
 
   public void traverse(WikiPage context, TraversalListener listener) throws Exception {
-    if (context.getClass() == SymbolicPage.class)
-      return;
+    if (context.getClass() == SymbolicPage.class) {
+      // check for recursive occurence in path
+      String name = context.getName();
+      
+      WikiPage page = context.getParent();
+      while(page.hasParent()) {
+        if(name.equals(page.getName())) {
+          return;
+        }
+        page = page.getParent();
+      }
+    }
     //TODO MdM Catch any exception thrown by the following and add the page name to the Exception message.
     listener.processPage(context);
     List<?> children = context.getChildren();

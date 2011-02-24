@@ -10,6 +10,8 @@ import java.util.List;
 public interface WikiPage extends Serializable, Comparable<Object> {
   public WikiPage getParent() throws Exception;
 
+  public boolean hasParent();
+  
   public WikiPage getParentForVariables() throws Exception;
 
   public void setParentForVariables(WikiPage parent);

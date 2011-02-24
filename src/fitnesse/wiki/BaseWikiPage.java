@@ -31,6 +31,10 @@ public abstract class BaseWikiPage implements WikiPage {
   public WikiPage getParent() {
     return parent == null ? this : parent;
   }
+  
+  public boolean hasParent() {
+    return parent != null;
+  }
 
   public void setParentForVariables(WikiPage parent) {
     parentForVariables = parent;
@@ -71,6 +75,7 @@ public abstract class BaseWikiPage implements WikiPage {
   private WikiPage createExternalSymbolicLink(String linkPath, String linkName) throws Exception {
     String fullPagePath = linkPath.substring(7);
     File file = new File(fullPagePath);
+    String absoluteFileName = file.getAbsolutePath();
     File parentDirectory = file.getParentFile();
     if (parentDirectory.exists()) {
       if (!file.exists())

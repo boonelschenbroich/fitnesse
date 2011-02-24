@@ -165,15 +165,15 @@ public class PageCrawlerTest implements TraversalListener {
   }
 
   @Test
-  public void testdoesntTraverseSymbolicPages() throws Exception {
+  public void testTraverseSymbolicPages() throws Exception {
     PageData data = page1.getData();
     data.getProperties().set(SymbolicPage.PROPERTY_NAME).set("SymLink", "PageTwo");
     page1.commit(data);
 
     crawler.traverse(root, this);
-    assertEquals(6, traversedPages.size());
+    assertEquals(7, traversedPages.size());
 
-    assertFalse(traversedPages.contains("SymLink"));
+    assertTrue(traversedPages.contains("SymLink"));
   }
 
   @Test

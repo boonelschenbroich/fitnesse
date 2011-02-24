@@ -42,6 +42,10 @@ public class WikiPageDummy implements WikiPage {
   public WikiPage getParent() {
     return parent;
   }
+  
+  public boolean hasParent() {
+    return parent != null;
+  }
 
   public void setParentForVariables(WikiPage parent) {
     parentForVariables = parent;
