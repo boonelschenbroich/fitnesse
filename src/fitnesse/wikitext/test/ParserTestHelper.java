@@ -1,5 +1,6 @@
 package fitnesse.wikitext.test;
 
+import fitnesse.html.HtmlElement;
 import fitnesse.wiki.WikiPage;
 import fitnesse.wikitext.parser.*;
 
@@ -113,7 +114,7 @@ public class ParserTestHelper {
         return Parser.make(new ParsingPage(new WikiSourcePage(page)), page.getData().getContent()).parse();
     }
 
-    private static Symbol parse(WikiPage page, String input) {
+    public static Symbol parse(WikiPage page, String input) {
         return Parser.make(new ParsingPage(new WikiSourcePage(page)), input).parse();
     }
 
@@ -140,4 +141,21 @@ public class ParserTestHelper {
     public static String metaHtml(String message) {
         return "<span class=\"meta\">" + message + "</span>";
     }
+
+    public static String tableWithCell(String cellContent) {
+        return tableWithCellAndRow(cellContent, "<tr>");
+    }
+
+    public static String tableWithCellAndRow(String cellContent, String firstRow) {
+        return nestedTableWithCellAndRow(cellContent, firstRow) + HtmlElement.endl;
+    }
+
+    public static String nestedTableWithCellAndRow(String cellContent, String firstRow) {
+        return "<table border=\"1\" cellspacing=\"0\">"+ HtmlElement.endl +
+        "\t" + firstRow + HtmlElement.endl +
+        "\t\t<td>" + cellContent + "</td>" + HtmlElement.endl +
+        "\t</tr>" + HtmlElement.endl +
+        "</table>";
+    }
+
 }

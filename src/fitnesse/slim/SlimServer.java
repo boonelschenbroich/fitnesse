@@ -43,18 +43,6 @@ public class SlimServer implements SocketServer {
     }
   }
 
-  private void closeEnclosingServiceInSeperateThread() {
-    new Thread(new Runnable() {
-      public void run() {
-        try {
-          SlimService.instance.close();
-        } catch (Exception e) {
-        }
-      }
-    }
-    ).start();
-  }
-
   private boolean tryProcessInstructions(Socket s) throws Exception {
     initialize(s);
     boolean more = true;
@@ -80,6 +68,13 @@ public class SlimServer implements SocketServer {
     return true;
   }
 
+  private String getInstructionsFromClient() throws Exception {
+    int instructionLength = Integer.parseInt(reader.read(6));
+    reader.read(1);
+    String instructions = reader.read(instructionLength);
+    return instructions;
+  }
+
   private boolean processTheInstructions(String instructions) throws IOException {
     if (instructions.equalsIgnoreCase("bye")) {
       return false;
@@ -88,13 +83,6 @@ public class SlimServer implements SocketServer {
       sendResultsToClient(results);
       return true;
     }
-  }
-
-  private String getInstructionsFromClient() throws Exception {
-    int instructionLength = Integer.parseInt(reader.read(6));
-    reader.read(1);
-    String instructions = reader.read(instructionLength);
-    return instructions;
   }
 
   private List<Object> executeInstructions(String instructions) {
@@ -116,6 +104,18 @@ public class SlimServer implements SocketServer {
     } catch (Exception e) {
 
     }
+  }
+
+  private void closeEnclosingServiceInSeperateThread() {
+    new Thread(new Runnable() {
+      public void run() {
+        try {
+          SlimService.instance.close();
+        } catch (Exception e) {
+        }
+      }
+    }
+    ).start();
   }
 
   @Override

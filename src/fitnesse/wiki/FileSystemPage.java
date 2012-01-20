@@ -4,7 +4,7 @@ package fitnesse.wiki;
 
 import fitnesse.ComponentFactory;
 import fitnesse.wiki.zip.ZipFileVersionsController;
-import fitnesse.wikitext.widgets.WikiWordWidget;
+import fitnesse.wikitext.parser.WikiWordPath;
 import util.Clock;
 import util.DiskFileSystem;
 import util.FileSystem;
@@ -78,8 +78,12 @@ public class FileSystemPage extends CachingPage {
     if (content.endsWith("|")) {
       content += separator;
     }
-
-    content = content.replaceAll("\r\n", separator);
+    
+    //First replace every windows style to unix
+    content = content.replaceAll("\r\n", "\n");
+    //Then do the replace to match the OS.  This works around
+    //a strange behavior on windows.
+    content = content.replaceAll("\n", separator);
 
     String contentPath = getFileSystemPath() + contentFilename;
     final File output = new File(contentPath);
@@ -172,7 +176,7 @@ public class FileSystemPage extends CachingPage {
   }
 
   private boolean fileIsValid(final String filename, final File dir) {
-    if (WikiWordWidget.isWikiWord(filename)) {
+    if (WikiWordPath.isWikiWord(filename)) {
       final File f = new File(dir, filename);
       if (f.isDirectory()) {
         return true;

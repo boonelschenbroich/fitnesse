@@ -25,7 +25,7 @@ public class TestResponder extends ChunkingResponder implements SecureResponder 
   private static LinkedList<TestEventListener> eventListeners = new LinkedList<TestEventListener>();
   protected PageData data;
   protected CompositeFormatter formatters;
-  private boolean isClosed = false;
+  private volatile boolean isClosed = false;
 
   private boolean fastTest = false;
   private boolean remoteDebug = false;
@@ -64,6 +64,7 @@ public class TestResponder extends ChunkingResponder implements SecureResponder 
       addHtmlFormatter();
     if (!request.hasInput("nohistory"))
       addTestHistoryFormatter();
+	addTestInProgressFormatter();
     formatters.writeHead(getTitle());
   }
 
@@ -118,8 +119,11 @@ public class TestResponder extends ChunkingResponder implements SecureResponder 
 
   protected void addTestHistoryFormatter() throws Exception {
     HistoryWriterFactory writerFactory = new HistoryWriterFactory();
-//    formatters.add(new XmlFormatter(context, page, writerFactory));
     formatters.add(new PageHistoryFormatter(context, page, writerFactory));
+  }
+  
+  protected void addTestInProgressFormatter() throws Exception {
+    formatters.add(new PageInProgressFormatter(page));
   }
 
   protected void sendPreTestNotification() throws Exception {
@@ -137,7 +141,6 @@ public class TestResponder extends ChunkingResponder implements SecureResponder 
 
     if (isEmpty(page))
       formatters.addMessageForBlankHtml();
-
     runner.executeTestPages();
   }
 

@@ -5,7 +5,7 @@ package fitnesse.wiki;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
+import util.EnvironmentVariableTool;
 import util.FileUtil;
 
 public abstract class BaseWikiPage implements WikiPage {
@@ -73,7 +73,7 @@ public abstract class BaseWikiPage implements WikiPage {
   }
 
   private WikiPage createExternalSymbolicLink(String linkPath, String linkName) throws Exception {
-    String fullPagePath = linkPath.substring(7);
+    String fullPagePath = EnvironmentVariableTool.replace(linkPath.substring(7));
     File file = new File(fullPagePath);
     String absoluteFileName = file.getAbsolutePath();
     File parentDirectory = file.getParentFile();
@@ -114,54 +114,10 @@ public abstract class BaseWikiPage implements WikiPage {
     return PageCrawlerImpl.getClosestInheritedPage("PageFooter", this);
   }
 
-  public List<WikiPageAction> getActions() throws Exception {
-    WikiPagePath localPagePath = getPageCrawler().getFullPath(this);
-    String localPageName = PathParser.render(localPagePath);
-    String localOrRemotePageName = localPageName;
-    boolean newWindowIfRemote = false;
-    if (this instanceof ProxyPage) {
-      ProxyPage proxyPage = (ProxyPage) this;
-      localOrRemotePageName = proxyPage.getThisPageUrl();
-      newWindowIfRemote = true;
-    }
-    return makeActions(localPageName, localOrRemotePageName, newWindowIfRemote);
+  public boolean isOpenInNewWindow() {
+    return false;
   }
-
-  private List<WikiPageAction> makeActions(String localPageName, String localOrRemotePageName, boolean newWindowIfRemote) throws Exception {
-    PageData pageData = getData();
-    List<WikiPageAction> actions = new ArrayList<WikiPageAction>();
-    addActionForAttribute("Test", pageData, localPageName, newWindowIfRemote, null, null, actions);
-    addActionForAttribute("Suite", pageData, localPageName, newWindowIfRemote, "", null, actions);
-    addActionForAttribute("Edit", pageData, localOrRemotePageName, newWindowIfRemote, null, null, actions);
-    addActionForAttribute("Properties", pageData, localOrRemotePageName, newWindowIfRemote, null, null, actions);
-    addActionForAttribute("Refactor", pageData, localOrRemotePageName, newWindowIfRemote, null, null, actions);
-    addActionForAttribute("Where Used", pageData, localOrRemotePageName, newWindowIfRemote, null, "whereUsed", actions);
-    addActionForAttribute("Search", pageData, "", newWindowIfRemote, null, "searchForm", actions);
-    addActionForAttribute("Files", pageData, "/files", newWindowIfRemote, null, "", actions);
-    addActionForAttribute("Versions", pageData, localOrRemotePageName, newWindowIfRemote, null, null, actions);
-    addActionForAttribute("Recent Changes", pageData, "/RecentChanges", newWindowIfRemote, "", "", actions);
-    addAction("User Guide", ".FitNesse.UserGuide", newWindowIfRemote, "", "", actions);
-    addAction("Test History", "?testHistory", newWindowIfRemote, "", "", actions);
-    return actions;
-  }
-
-  private void addActionForAttribute(String attribute, PageData pageData, String pageName, boolean newWindowIfRemote,
-                                     String shortcutKey, String query, List<WikiPageAction> actions) {
-    if (pageData.hasAttribute(attribute.replaceAll("\\s", ""))) {
-      addAction(attribute, pageName, newWindowIfRemote, shortcutKey, query, actions);
-    }
-  }
-
-  private void addAction(String linkName, String pageName, boolean newWindowIfRemote, String shortcutKey, String query, List<WikiPageAction> actions) {
-    WikiPageAction link = new WikiPageAction(pageName, linkName);
-    link.setNewWindow(newWindowIfRemote);
-    if (shortcutKey != null)
-      link.setShortcutKey(shortcutKey);
-    if (query != null)
-      link.setQuery(query);
-    actions.add(link);
-  }
-
+  
   public String toString() {
     return this.getClass().getName() + ": " + name;
   }

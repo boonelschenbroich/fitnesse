@@ -64,17 +64,37 @@ public class Matcher {
         return this;
     }
 
-    public Matcher digit() {
-        if (firsts == null) {
-            firsts = new ArrayList<Character>();
-            for (char i = '1'; i <= '9'; i++) firsts.add(i);
-        }
+    public Matcher listDigit() {
+        firstIsDigit('1');
         matches.add(new ScanMatch() {
             public Maybe<Integer> match(ScanString input, int offset) {
-                for (char i = '1'; i <= '9'; i++) {
-                   if (input.matches(new String(new char[] {i}), offset)) return new Maybe<Integer>(1);
-                }
-                return Maybe.noInteger;
+                return isDigitInput('1', input, offset) ? new Maybe<Integer>(1) : Maybe.noInteger;
+            }
+        });
+        return this;
+    }
+
+    private boolean isDigitInput(char firstDigit, ScanString input, int offset) {
+        for (char i = firstDigit; i <= '9'; i++) {
+           if (input.matches(new String(new char[] {i}), offset)) return true;
+        }
+        return false;
+    }
+
+    private void firstIsDigit(char startDigit) {
+        if (firsts == null) {
+            firsts = new ArrayList<Character>();
+            for (char i = startDigit; i <= '9'; i++) firsts.add(i);
+        }
+    }
+
+    public Matcher digits() {
+        firstIsDigit('0');
+        matches.add(new ScanMatch() {
+            public Maybe<Integer> match(ScanString input, int offset) {
+                int size = 0;
+                while (isDigitInput('0', input, offset + size)) size++;
+                return size > 0 ? new Maybe<Integer>(size) : Maybe.noInteger;
             }
         });
         return this;

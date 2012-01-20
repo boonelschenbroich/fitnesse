@@ -22,6 +22,7 @@ import fitnesse.wikitext.parser.Symbol;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.ServerSocket;
 import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -114,14 +115,33 @@ public abstract class SlimTestSystem extends TestSystem implements SlimTestConte
     if (fastTest) {
       slimRunner = new MockCommandRunner();
       createSlimService(slimArguments);
+    }
+    else if (manualStart) {
+      slimSocket = getSlimPortBase();
+      slimRunner = new MockCommandRunner();
     } else {
       slimRunner = new CommandRunner(slimCommand, "", createClasspathEnvironment(classPath));
     }
     return new ExecutionLog(page, slimRunner);
   }
 
+  public int findFreePort() {
+    int port;
+    try {
+      ServerSocket socket = new ServerSocket(0);
+      port = socket.getLocalPort();
+      socket.close();
+    } catch (Exception e) {
+      port = -1;
+    }
+    return port;
+  }
+
   public int getNextSlimSocket() {
     int base = getSlimPortBase();
+    if (base == 0) {
+      return findFreePort();
+    }
     synchronized (slimSocketOffset) {
       int offset = slimSocketOffset.get();
       offset = (offset + 1) % 10;
@@ -166,8 +186,12 @@ public abstract class SlimTestSystem extends TestSystem implements SlimTestConte
 
   public void bye() throws Exception {
     slimClient.sendBye();
-    if (!fastTest)
+    if (!fastTest && !manualStart) {
       slimRunner.join();
+    }
+    if (fastTest) {
+      slimRunner.kill();
+    }
   }
 
   //For testing only.  Makes responder faster.
@@ -298,14 +322,18 @@ public abstract class SlimTestSystem extends TestSystem implements SlimTestConte
 
   private List<SlimTable> createSlimTables(TableScanner tableScanner) {
     List<SlimTable> allTables = new LinkedList<SlimTable>();
-    for (Table table : tableScanner) {
-      String tableId = "" + allTables.size();
-      SlimTable slimTable = slimTableFactory.makeSlimTable(table, tableId, this);
-      if (slimTable != null) {
-        allTables.add(slimTable);
-      }
-    }
+    for (Table table : tableScanner)
+      createSlimTable(allTables, table);
+   
     return allTables;
+  }
+
+  private void createSlimTable(List<SlimTable> allTables, Table table) {
+    String tableId = "" + allTables.size();
+    SlimTable slimTable = slimTableFactory.makeSlimTable(table, tableId, this);
+    if (slimTable != null) {
+      allTables.add(slimTable);
+    }
   }
 
   static String translateExceptionMessage(String exceptionMessage) {

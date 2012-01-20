@@ -3,15 +3,13 @@
 package fitnesse.wiki;
 
 import java.util.Iterator;
-import java.util.regex.Pattern;
 
-import fitnesse.wikitext.widgets.WikiWordWidget;
+import fitnesse.wikitext.parser.WikiWordPath;
 
 public class PathParser {
   public static final String PATH_SEPARATOR = ".";
 
   public static final String PATH_PREFIX_CHARS = ".<>^"; //..."^" is deprecated
-  private static final Pattern wikiWordPattern = Pattern.compile(WikiWordWidget.REGEXP);
   private WikiPagePath path;
 
   public static WikiPagePath parse(String pathName) {
@@ -22,7 +20,7 @@ public class PathParser {
     path = new WikiPagePath();
     if (pathName.equals("")) {
       return path;
-    } else if (pathName.equals("root") || pathName.equals(PATH_SEPARATOR)) {
+    } else if (pathName.equals("root") || pathName.equals(PATH_SEPARATOR) || pathName.equals("/")) {
       path.makeAbsolute();
       return path;
     } else {
@@ -57,7 +55,7 @@ public class PathParser {
   }
 
   private static boolean nameIsValid(String name) {
-    return wikiWordPattern.matcher(name).matches();
+    return WikiWordPath.isWikiWord(name);
   }
 
   public static String render(WikiPagePath path) {

@@ -122,4 +122,8 @@ public class WikiPageDummy implements WikiPage {
   public List<WikiPageAction> getActions() throws Exception {
     return null;
   }
+  
+  public boolean isOpenInNewWindow() {
+    return false;
+  }
 }

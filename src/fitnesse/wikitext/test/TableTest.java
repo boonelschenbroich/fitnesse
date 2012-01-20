@@ -17,11 +17,12 @@ public class TableTest {
         ParserTestHelper.assertTranslatesTo("|a|", tableWithCell("a"));
         ParserTestHelper.assertTranslatesTo("||\n", tableWithCell(""));
         ParserTestHelper.assertTranslatesTo("| a |\n", tableWithCell("a"));
+        ParserTestHelper.assertTranslatesTo("|!- a -!|\n", tableWithCell(" a "));
         ParserTestHelper.assertTranslatesTo("|''a''|\n", tableWithCell("<i>a</i>"));
         ParserTestHelper.assertTranslatesTo("|!c a|\n", tableWithCell("<div class=\"centered\">a</div>"));
         ParserTestHelper.assertTranslatesTo("|http://mysite.org|\n",
           tableWithCell("<a href=\"http://mysite.org\">http://mysite.org</a>"));
-        ParserTestHelper.assertTranslatesTo("|!-line\nbreaks\n-!|\n", tableWithCell("line\nbreaks"));
+        ParserTestHelper.assertTranslatesTo("|!-line\nbreaks\n-!|\n", tableWithCell("line\nbreaks\n"));
 
         ParserTestHelper.assertTranslatesTo("|a|b|c|\n|d|e|f|\n",
           "<table border=\"1\" cellspacing=\"0\">" + HtmlElement.endl +
@@ -78,30 +79,30 @@ public class TableTest {
     }
 
     @Test public void overridesNestedRule() {
+        ParserTestHelper.assertTranslatesTo("|''|\n", tableWithCell("''"));
         ParserTestHelper.assertTranslatesTo("|''a|\n''", tableWithCell("''a") + "''");
     }
 
     @Test public void translatesNestedLiteralTable() {
-        ParserTestHelper.assertTranslatesTo("|${x}|\n", new TestVariableSource("x", "!|y|\n"), tableWithCell(nestedTableWithCellAndRow("y", "<tr>")));
+        ParserTestHelper.assertTranslatesTo("|${x}|\n", new TestVariableSource("x", "!|y|\n"),
+                tableWithCell(ParserTestHelper.nestedTableWithCellAndRow("y", "<tr>")));
     }
 
     @Test public void translatesLiteralNestedTable() {
         ParserTestHelper.assertTranslatesTo("!|${x}|\n", new TestVariableSource("x", "|y|\n"), tableWithCell("|y|"));
     }
 
+    @Test public void translatesVariableWithWhitespace() {
+        ParserTestHelper.assertTranslatesTo("!|${x}|\n", new TestVariableSource("x", " a "), tableWithCell("a"));
+        ParserTestHelper.assertTranslatesTo("!|${x}|\n", new TestVariableSource("x", "!- a -!"), tableWithCell(" a "));
+        ParserTestHelper.assertTranslatesTo("!|${x}|\n${x}", new TestVariableSource("x", "!- a -!"), tableWithCell(" a ") + " a ");
+    }
+
     private String tableWithCell(String cellContent) {
-        return tableWithCellAndRow(cellContent, "<tr>");
+        return ParserTestHelper.tableWithCell(cellContent);
     }
 
     private String tableWithCellAndRow(String cellContent, String firstRow) {
-        return nestedTableWithCellAndRow(cellContent, firstRow) + HtmlElement.endl;
-    }
-
-    private String nestedTableWithCellAndRow(String cellContent, String firstRow) {
-        return "<table border=\"1\" cellspacing=\"0\">"+ HtmlElement.endl +
-        "\t" + firstRow + HtmlElement.endl +
-        "\t\t<td>" + cellContent + "</td>" + HtmlElement.endl +
-        "\t</tr>" + HtmlElement.endl +
-        "</table>";
+        return ParserTestHelper.tableWithCellAndRow(cellContent, firstRow);
     }
 }
